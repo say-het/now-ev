@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,31 +79,56 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
   }
 
   /// Step 3: Make a POST request to `/payment` after returning
-  Future<void> _confirmPayment() async {
-    const String apiUrl = "https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/payment";
-    final DateTime endTime = DateTime.now();
-
-    final Map<String, dynamic> postData = {
-      "user_id": "123456",
-      "ev_id": "EV001",
-      "start_time": _startTime?.toIso8601String() ?? "",
-      "amount": _totalAmount.toString(), // Send calculated amount
-      "payment_id": "PAY123",
-      "status": "fail"
-    };
-
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(postData),
-      );
-
-      _showStatusDialog(response.statusCode, response.body);
-    } catch (e) {
-      _showStatusDialog(0, "Error confirming payment: $e");
-    }
+Future<void> _confirmPayment() async {
+  const String apiUrl = "https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
+  
+  final String? userId = await _getUserIdFromLocalStorage();
+  if (userId == null) {
+    _showStatusDialog(0, "Error: User ID not found");
+    return;
   }
+
+  final String paymentId = _generateRandomPaymentId();
+  final String startTime = DateTime.now().toIso8601String();
+
+  final Map<String, dynamic> postData = {
+    "user_email": userId,
+    "ev_id": "1",
+    "start_time": startTime,
+    "amount": _totalAmount.toString(),
+    "payment_id": "1",
+    "status": "success",
+  };
+
+  try {
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(postData),
+    );
+
+    _showStatusDialog(response.statusCode, response.body);
+  } catch (e) {
+    _showStatusDialog(0, "Error confirming payment: $e");
+  }
+}
+
+/// Function to load `user_id` from local storage
+Future<String?> _getUserIdFromLocalStorage() async {
+  try {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('user_email'); // Assuming user_id is stored as 'user_email'
+  } catch (e) {
+    print('Error retrieving user ID: $e');
+    return null;
+  }
+}
+
+/// Function to generate a random `payment_id`
+String _generateRandomPaymentId() {
+  final Random random = Random();
+  return "PAY${random.nextInt(999999).toString().padLeft(6, '0')}";
+}
 
   /// Show AlertDialog with status code and message
   void _showStatusDialog(int statusCode, String message) {
