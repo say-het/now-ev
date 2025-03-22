@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:my_app/vehicles.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
@@ -13,6 +15,51 @@ class OTPVerificationScreen extends StatefulWidget {
 class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   final int otpLength = 6;
+  bool _isLoading = false;
+
+  Future<void> _verifyOTP() async {
+    final String otp = _otpController.text.trim();
+
+    if (otp.length != otpLength) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    final Uri url = Uri.parse("https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify");
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "phone": widget.mobileNumber,
+          "otp": otp,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        // Navigate to VehiclesScreen on success
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => VehiclesScreen()),
+        );
+      } else {
+        _showSnackBar("Invalid OTP. Try again.");
+      }
+    } catch (e) {
+      _showSnackBar("Error: ${e.toString()}");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,9 +104,9 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               keyboardType: TextInputType.number,
               maxLength: otpLength,
               textAlign: TextAlign.center,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 counterText: "",
-                border: const UnderlineInputBorder(),
+                border: UnderlineInputBorder(),
               ),
               onChanged: (value) {
                 setState(() {});
@@ -74,24 +121,21 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                   backgroundColor: Colors.green,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
-                onPressed: _otpController.text.length == otpLength
-                    ? () {
-                                Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VehiclesScreen()),
-        );
-                      }
+                onPressed: (_otpController.text.length == otpLength && !_isLoading)
+                    ? _verifyOTP
                     : null,
-                child: const Text(
-                  "VERIFY OTP",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
+                child: _isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        "VERIFY OTP",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
               ),
             ),
             const SizedBox(height: 20),
             TextButton(
               onPressed: () {
-                // Resend OTP logic
+                // TODO: Implement OTP resend logic
               },
               child: const Text(
                 "Resend OTP",

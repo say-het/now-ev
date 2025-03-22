@@ -156,7 +156,7 @@ class _AuthScreenState extends State<AuthScreen> {
 Future<void> _sendUserDataToServer(String name, String email) async {
   try {
     final response = await http.post(
-      Uri.parse('http://192.168.224.115:5000/create_user'),
+      Uri.parse('https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_user'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -309,12 +309,7 @@ Future<void> _sendUserDataToServer(String name, String email) async {
                 children: [
                   _buildTabButton("LOGIN", 0),
                   _buildTabButton("SIGN UP", 1),
-                  if (kDebugMode) // Only show in debug mode
-            ElevatedButton(
-              onPressed: _useStoredEmail,
-              child: Text('Show Stored Email'),
-            ),
-                ],
+                ]    
               ),
             ),
           ),
