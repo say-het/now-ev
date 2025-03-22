@@ -10,45 +10,43 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  String? _selectedCity;
+  Future<UserCredential?> signInWithGoogle() async {
+    try {
+      // Check if platform is web
+      if (kIsWeb) {
+        // Web implementation
+        GoogleAuthProvider googleProvider = GoogleAuthProvider();
+        return await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } else {
+        // Android/iOS implementation
+        final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+        
+        if (googleUser == null) {
+          // User canceled the sign-in flow
+          return null;
+        }
 
-Future<UserCredential?> signInWithGoogle() async {
-  try {
-    // Check if platform is web
-    if (kIsWeb) {
-      // Web implementation
-      GoogleAuthProvider googleProvider = GoogleAuthProvider();
-      return await FirebaseAuth.instance.signInWithPopup(googleProvider);
-    } else {
-      // Android/iOS implementation
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      
-      if (googleUser == null) {
-        // User canceled the sign-in flow
-        return null;
+        // Obtain the auth details from the request
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+        // Create a new credential
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+
+        // Sign in with Firebase
+        return await FirebaseAuth.instance.signInWithCredential(credential);
       }
-
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in with Firebase
-      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } catch (e) {
+      print('Error signing in with Google: $e');
+      rethrow;
     }
-  } catch (e) {
-    print('Error signing in with Google: $e');
-    rethrow;
   }
-}
+
   void _handleGoogleSignIn() async {
     UserCredential? userCredential = await signInWithGoogle();
-    if (userCredential != null && _selectedCity != null) {
+    if (userCredential != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -66,21 +64,6 @@ Future<UserCredential?> signInWithGoogle() async {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(labelText: 'Full Name'),
-            ),
-            DropdownButtonFormField<String>(
-              value: _selectedCity,
-              hint: Text('Select City'),
-              items: ['Ahmedabad', 'Delhi', 'Mumbai']
-                  .map((city) => DropdownMenuItem(
-                        value: city,
-                        child: Text(city),
-                      ))
-                  .toList(),
-              onChanged: (value) => setState(() => _selectedCity = value),
-            ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _handleGoogleSignIn,
