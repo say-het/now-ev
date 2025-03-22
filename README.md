@@ -85,26 +85,35 @@ This project aims to **create a secure EV rental management module** for mobile/
 ## 🏞 UI & Implementation Flow
 
 ### 📸 Screenshots
-
-
-<img src="https://github.com/user-attachments/assets/da74b2b3-11e1-4778-89c5-34dc3962dfee" width="400" height="700">
-<img src="https://github.com/user-attachments/assets/1c30463a-a975-4fbd-8191-f5789a6ad9f7" width="400" height="700">
-<br>
-<img src="https://github.com/user-attachments/assets/88bb8a4b-5cc8-400c-be48-9fd979d09292" width="400" height="700">
-<img src="https://github.com/user-attachments/assets/2c8a4d2c-3b98-4c73-a77a-d572f061041b" width="400" height="700">
-<br>
-<img src="https://github.com/user-attachments/assets/734a1fbf-f599-4854-b7c0-2b3dc31bf3b5" width="400" height="700">
-<img src="https://github.com/user-attachments/assets/794f3efa-3e13-4635-a8c5-86a86190e4a2" width="400" height="700">
-
-
-
+👉 Add your UI photos here
 
 ### 🔄 Implementation Flow
 👉 Add implementation flow images here
 
+![1](https://github.com/user-attachments/assets/8892e81f-c09c-4cf9-9aa7-52c305109f5e)
+
+![2](https://github.com/user-attachments/assets/ed383b14-5bfb-444d-9652-004d7eca9783)
+
+![3](https://github.com/user-attachments/assets/9fcbb63a-e23a-4676-b9d5-e2ba66a2d26a)
+
+![31](https://github.com/user-attachments/assets/c45fe508-d30a-4689-8ff4-57fc6868ec6e)
+
+![4](https://github.com/user-attachments/assets/0e202667-f843-4662-b12b-3a5850426879)
+
+![32](https://github.com/user-attachments/assets/dca67435-c33f-4f0a-b373-ead345435af7)
+
+![5](https://github.com/user-attachments/assets/985d8fe9-7148-4e19-bc47-bb5c619e7873)
+
+![6](https://github.com/user-attachments/assets/c9485cf9-5e6f-4606-8ef0-1911d8388597)
+
+![40](https://github.com/user-attachments/assets/c63a8006-3780-4d82-bf95-a8e148cc5e38)
+
+![7](https://github.com/user-attachments/assets/4060eb6e-8f44-4fab-85cd-7d763cd67435)
+
+![40](https://github.com/user-attachments/assets/3aee04b8-07cb-46fe-a290-0e0eef9de2b0)
 
 
-![Implementation Flow](path/to/your/image2.png)
+---
 
 ## 📚 References
 - [Square API Docs](https://developer.squareup.com/docs)
@@ -148,8 +157,12 @@ This project aims to **create a secure EV rental management module** for mobile/
 - [Jay Shah](https://github.com/Jay-1409)
 - [Krish Chothani](https://github.com/KrishChothani)
 - [Jainil Patel](https://github.com/JainilPatel2502)
-- [Raj Mistry](https://github.com/raj-mistry-01)
+- [Raj Mistry](https://github.com/raj_mistry01)
 
 💡 *Feel free to contribute by submitting pull requests!* 
 
 # Team Big Brains
+
+
+
+readme
