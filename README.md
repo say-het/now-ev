@@ -110,7 +110,6 @@ This project aims to **create a secure EV rental management module** for mobile/
 
 ![7](https://github.com/user-attachments/assets/4060eb6e-8f44-4fab-85cd-7d763cd67435)
 
-![40](https://github.com/user-attachments/assets/3aee04b8-07cb-46fe-a290-0e0eef9de2b0)
 
 
 ---
