@@ -1,7 +1,6 @@
-import 'dart:convert'; // <-- Add this line for jsonEncode
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 
@@ -24,38 +23,69 @@ class AtherScooterScreen extends StatefulWidget {
 }
 
 class _AtherScooterScreenState extends State<AtherScooterScreen> {
-  DateTime? _startTime; // Track when user leaves the app
+  int _selectedHours = 1; // Default 1 hour
+  int get _totalAmount => _selectedHours * 5;
+  DateTime? _startTime;
 
-  /// Open Google in WebView and start timer
-  Future<void> _launchBookingURL() async {
-    final Uri url = Uri.parse('https://www.google.com');
+  /// Step 1: Create payment and get checkout URL
+  Future<void> _createPayment() async {
+    const String apiUrl = "http://localhost:5000/cpayment";
 
-    if (await canLaunchUrl(url)) {
-      _startTime = DateTime.now(); // Save time when user leaves
-      await launchUrl(
-        url,
-        mode: LaunchMode.inAppWebView, // Open in in-app browser
+    final Map<String, dynamic> requestData = {
+      "user_id": "123456",
+      "ev_id": "EV001",
+      "amount": _totalAmount.toString(),
+      "hours": _selectedHours.toString()
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(requestData),
       );
 
-      // Start a delayed check to send POST request when returning
-      Timer(const Duration(seconds: 2), () => _sendPostRequest());
-    } else {
-      throw 'Could not launch $url';
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+        String checkoutUrl = responseData["checkout_url"];
+
+        _startTime = DateTime.now();
+        _openCheckout(checkoutUrl);
+      } else {
+        _showStatusDialog(response.statusCode, "Failed to create payment");
+      }
+    } catch (e) {
+      _showStatusDialog(0, "Error creating payment: $e");
     }
   }
 
-  /// Send POST request with dummy data
-  Future<void> _sendPostRequest() async {
-    const String apiUrl = "http://192.168.208.149:5000/payment"; // Dummy API URL
-    final DateTime endTime = DateTime.now(); // Capture return time
+  /// Step 2: Open WebView for Checkout
+  void _openCheckout(String checkoutUrl) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CheckoutWebView(
+          checkoutUrl: checkoutUrl,
+          onCheckoutCompleted: (bool success) {
+            _confirmPayment(success);
+          },
+        ),
+      ),
+    );
+  }
+
+  /// Step 3: Confirm Payment after returning from checkout
+  Future<void> _confirmPayment(bool success) async {
+    const String apiUrl = "http://192.168.208.149:5000/payment";
+    final DateTime endTime = DateTime.now();
 
     final Map<String, dynamic> postData = {
-      "user_id": "123456",   // Dummy User ID
-      "ev_id": "EV001",      // Dummy EV ID
-      "start_time": _startTime?.toIso8601String() ?? "", // Start time
-      "amount": "5499",      // Dummy amount
-      "payment_id": "PAY123", // Dummy payment ID
-      "status": "success"    // Dummy status
+      "user_id": "123456",
+      "ev_id": "EV001",
+      "start_time": _startTime?.toIso8601String() ?? "",
+      "amount": _totalAmount.toString(),
+      "payment_id": "PAY123",
+      "status": success ? "success" : "fail"
     };
 
     try {
@@ -65,14 +95,29 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
         body: jsonEncode(postData),
       );
 
-      if (response.statusCode == 200) {
-        print("POST request successful: ${response.body}");
-      } else {
-        print("Failed to send POST request: ${response.statusCode}");
-      }
+      _showStatusDialog(response.statusCode, response.body);
     } catch (e) {
-      print("Error sending POST request: $e");
+      _showStatusDialog(0, "Error confirming payment: $e");
     }
+  }
+
+  /// Show AlertDialog with status code and message
+  void _showStatusDialog(int statusCode, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Payment Response"),
+          content: Text("Status Code: $statusCode\n\nMessage: $message"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -91,83 +136,84 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            /// Vehicle Image
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Image.network(widget.image, height: 200, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.image_not_supported, size: 100, color: Colors.grey);
-              }),
-            ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 20),
+          const Text("\$5 per hour", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green)),
 
-            /// Subscription Price
-            const Text(
-              "SUBSCRIBE AT",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black54),
-            ),
-            const SizedBox(height: 5),
-            const Text(
-              "₹ 5,499/month",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
+          /// Select Hours Dropdown
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text("Select Hours:", style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 10),
+              DropdownButton<int>(
+                value: _selectedHours,
+                items: List.generate(10, (index) => index + 1)
+                    .map((hour) => DropdownMenuItem<int>(
+                          value: hour,
+                          child: Text("$hour hour${hour > 1 ? 's' : ''}"),
+                        ))
+                    .toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    _selectedHours = newValue!;
+                  });
+                },
+              ),
+            ],
+          ),
 
-            /// Info Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _infoColumn("Range", "100 km"),
-                  _infoColumn("Top Speed", "90 km/h"),
-                  _infoColumn("Charging Time", "5 hours 20 mins"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Text("Total: \$$_totalAmount", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 30),
 
-            /// Description
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                "Experience the future with the ${widget.brand} ${widget.model}. With a real-world range of 100km, advanced features, and a stylish design, this electric scooter is built for tomorrow!",
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
-              ),
-            ),
-            const SizedBox(height: 30),
-
-            /// "BOOK NOW" Button
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
-              ),
-              onPressed: _launchBookingURL, // Open Google, then send POST request
-              child: Text(
-                widget.buttonText,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)), padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15)),
+            onPressed: _createPayment,
+            child: Text(widget.buttonText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
+}
 
-  /// Helper Widget for Info Columns
-  Widget _infoColumn(String title, String value) {
-    return Column(
-      children: [
-        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 5),
-        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-      ],
-    );
+/// Checkout WebView with URL Monitoring
+class CheckoutWebView extends StatefulWidget {
+  final String checkoutUrl;
+  final Function(bool success) onCheckoutCompleted;
+
+  const CheckoutWebView({Key? key, required this.checkoutUrl, required this.onCheckoutCompleted}) : super(key: key);
+
+  @override
+  _CheckoutWebViewState createState() => _CheckoutWebViewState();
+}
+
+class _CheckoutWebViewState extends State<CheckoutWebView> {
+  late final WebViewController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageStarted: (String url) {
+          if (url != widget.checkoutUrl) {
+            widget.onCheckoutCompleted(true); // Payment success
+            Navigator.pop(context);
+          }
+        },
+        onWebResourceError: (error) {
+          widget.onCheckoutCompleted(false); // Payment failed
+          Navigator.pop(context);
+        },
+      ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WebViewWidget(controller: _controller..loadRequest(Uri.parse(widget.checkoutUrl)));
   }
 }

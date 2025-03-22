@@ -35,7 +35,7 @@ Future<void> _fetchVehicles() async {
 
   try {
     // Constructing the URL with or without location data
-    String url = 'http://172.20.10.4:5000/fetch_ev';
+    String url = 'https://60a5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
     // if (_currentPosition != null) {
     //   url += '?type=scooter';
     // }
@@ -399,42 +399,6 @@ Future<void> _fetchVehicles() async {
                     ),
                     SizedBox(height: 8),
 
-                    /// "BOOK NOW" Button
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green[700],
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder:
-                                (context) => AtherScooterScreen(
-                                  brand: vehicle["brand"],
-                                  model: vehicle["model"],
-                                  image: vehicle["image"],
-                                  buttonText: vehicle["buttonText"],
-                                ),
-                          ),
-                        );
-                      },
-                      icon: Icon(Icons.flash_on, color: Colors.white, size: 18),
-                      label: Text(
-                        vehicle["buttonText"],
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
