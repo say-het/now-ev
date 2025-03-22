@@ -26,15 +26,14 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       _isLoading = true;
     });
 
-    final Uri url = Uri.parse("https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify");
+    final Uri url = Uri.parse(
+      "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify",
+    );
     try {
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "phone": widget.mobileNumber,
-          "otp": otp,
-        }),
+        body: jsonEncode({"phone": widget.mobileNumber, "otp": otp}),
       );
 
       if (response.statusCode == 200) {
@@ -75,7 +74,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
         ),
         title: const Text(
           "ENTER OTP",
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
@@ -95,7 +98,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 "ENTER OTP",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
               ),
             ),
             const SizedBox(height: 5),
@@ -119,17 +126,25 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
-                onPressed: (_otpController.text.length == otpLength && !_isLoading)
-                    ? _verifyOTP
-                    : null,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "VERIFY OTP",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
+                onPressed:
+                    (_otpController.text.length == otpLength && !_isLoading)
+                        ? _verifyOTP
+                        : null,
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                          "VERIFY OTP",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
               ),
             ),
             const SizedBox(height: 20),
@@ -139,7 +154,11 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
               },
               child: const Text(
                 "Resend OTP",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
               ),
             ),
           ],

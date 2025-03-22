@@ -28,74 +28,86 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     _requestLocationPermission(); // Request location permission on load
   }
 
-Future<void> _fetchVehicles() async {
-  setState(() {
-    _isLoading = true;
-  });
+  Future<void> _fetchVehicles() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-  try {
-    // Constructing the URL with or without location data
-    String url = 'https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
-    // if (_currentPosition != null) {
-    //   url += '?type=scooter';
-    // }
+    try {
+      // Constructing the URL with or without location data
+      String url =
+          'https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
+      // if (_currentPosition != null) {
+      //   url += '?type=scooter';
+      // }
 
-    // Add type filter based on selected tab
-    String type = _selectedTabIndex == 0 ? '' : 'car';
-    // url += _currentPosition != null ? '&type=$type' : '?type=$type';
+      // Add type filter based on selected tab
+      String type = _selectedTabIndex == 0 ? '' : 'car';
+      // url += _currentPosition != null ? '&type=$type' : '?type=$type';
 
-    final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url));
 
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      List<dynamic> vehicles = data['data'];
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List<dynamic> vehicles = data['data'];
 
-      // Filter vehicles based on ev_type
-      List<dynamic> carVehicles = vehicles.where((v) => v['ev_type'] == "car").toList();
-      List<dynamic> bikeVehicles = vehicles.where((v) => v['ev_type'] != "car").toList();
+        // Filter vehicles based on ev_type
+        List<dynamic> carVehicles =
+            vehicles.where((v) => v['ev_type'] == "car").toList();
+        List<dynamic> bikeVehicles =
+            vehicles.where((v) => v['ev_type'] != "car").toList();
 
-      // Update the appropriate list based on the selected tab
-      setState(() {
-        // For two-wheelers tab
-        twoWheelers = bikeVehicles
-            .map(
-              (v) => {
-                "brand": v['brand_name'],
-                "model": v['model'],
-                "image": v['image'],
-                "buttonText": v['status'] == 'available' ? "Book Now" : "Join Waitlist",
-              },
-            )
-            .toList()
-            .cast<Map<String, dynamic>>();
+        // Update the appropriate list based on the selected tab
+        setState(() {
+          // For two-wheelers tab
+          twoWheelers =
+              bikeVehicles
+                  .map(
+                    (v) => {
+                      "brand": v['brand_name'],
+                      "model": v['model'],
+                      "image": v['image'],
+                      "buttonText":
+                          v['status'] == 'available'
+                              ? "Book Now"
+                              : "Join Waitlist",
+                    },
+                  )
+                  .toList()
+                  .cast<Map<String, dynamic>>();
 
-        // For cars tab
-        cars = carVehicles
-            .map(
-              (v) => {
-                "brand": v['brand_name'],
-                "model": v['model'],
-                "image": v['image'],
-                "buttonText": v['availability'] == 'available' ? "Book Now" : "Join Waitlist",
-              },
-            )
-            .toList()
-            .cast<Map<String, dynamic>>();
-      });
-    } else {
+          // For cars tab
+          cars =
+              carVehicles
+                  .map(
+                    (v) => {
+                      "brand": v['brand_name'],
+                      "model": v['model'],
+                      "image": v['image'],
+                      "buttonText":
+                          v['availability'] == 'available'
+                              ? "Book Now"
+                              : "Join Waitlist",
+                    },
+                  )
+                  .toList()
+                  .cast<Map<String, dynamic>>();
+        });
+      } else {
+        // Use default data if API fails
+        _loadDefaultData();
+      }
+    } catch (e) {
+      print('Error fetching vehicles: $e');
       // Use default data if API fails
       _loadDefaultData();
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-  } catch (e) {
-    print('Error fetching vehicles: $e');
-    // Use default data if API fails
-    _loadDefaultData();
-  } finally {
-    setState(() {
-      _isLoading = false;
-    });
   }
-}
+
   void _loadDefaultData() {
     // Fallback to hardcoded data if API fails
     if (_selectedTabIndex == 0) {
@@ -215,25 +227,27 @@ Future<void> _fetchVehicles() async {
         title: Text("VEHICLES", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
         actions: [
-    IconButton(
-      icon: Icon(Icons.account_balance_wallet, color: Colors.white),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => FaceVerificationScreen()),
-        );
-      },
-    ),
-    IconButton(
-      icon: Icon(Icons.person, color: Colors.white),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ManageProfileScreen()),
-        );
-      },
-    ),
-  ],
+          IconButton(
+            icon: Icon(Icons.account_balance_wallet, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FaceVerificationScreen(),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.person, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ManageProfileScreen()),
+              );
+            },
+          ),
+        ],
       ),
       drawer: _buildDrawer(context),
       body: Column(
@@ -398,7 +412,6 @@ Future<void> _fetchVehicles() async {
                       ),
                     ),
                     SizedBox(height: 8),
-
                   ],
                 ),
               ),
@@ -426,7 +439,10 @@ Future<void> _fetchVehicles() async {
             ),
             accountName: Text(
               "Jay Shah",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             accountEmail: Text(
               "9723557662",
@@ -459,13 +475,19 @@ Future<void> _fetchVehicles() async {
   }
 
   // Drawer Item Builder
-  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, int index) {
+  Widget _buildDrawerItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    int index,
+  ) {
     return ListTile(
       leading: Icon(icon, color: Colors.black),
       title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
       onTap: () {
         Navigator.pop(context); // Close drawer
-        if (index != 3) { // If not vehicles (current screen)
+        if (index != 3) {
+          // If not vehicles (current screen)
           // Navigate to the corresponding screen
           // This is a simplified navigation - you'll need to adapt this based on your app structure
           switch (index) {
@@ -494,4 +516,4 @@ Future<void> _fetchVehicles() async {
       },
     );
   }
-} 
+}

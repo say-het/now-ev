@@ -26,18 +26,20 @@ class AtherScooterScreen extends StatefulWidget {
 
 class _AtherScooterScreenState extends State<AtherScooterScreen> {
   int _selectedHours = 1; // Default 1 hour
-  int get _totalAmount => _selectedHours * 5; // Calculate total amount ($5 per hour)
+  int get _totalAmount =>
+      _selectedHours * 5; // Calculate total amount ($5 per hour)
   DateTime? _startTime;
 
   /// Step 1: Make POST request to `/cpayment` to get `checkout_url`
   Future<void> _createPayment() async {
-    const String apiUrl = "https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
+    const String apiUrl =
+        "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
 
     final Map<String, dynamic> requestData = {
       "user_id": "123456",
       "ev_id": "EV001",
       "amount": _totalAmount.toString(), // Dynamically calculated amount
-      "hours": _selectedHours.toString() // Send selected hours too
+      "hours": _selectedHours.toString(), // Send selected hours too
     };
 
     try {
@@ -79,56 +81,59 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
   }
 
   /// Step 3: Make a POST request to `/payment` after returning
-Future<void> _confirmPayment() async {
-  const String apiUrl = "https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
-  
-  final String? userId = await _getUserIdFromLocalStorage();
-  if (userId == null) {
-    _showStatusDialog(0, "Error: User ID not found");
-    return;
+  Future<void> _confirmPayment() async {
+    const String apiUrl =
+        "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
+
+    final String? userId = await _getUserIdFromLocalStorage();
+    if (userId == null) {
+      _showStatusDialog(0, "Error: User ID not found");
+      return;
+    }
+
+    final String paymentId = _generateRandomPaymentId();
+    final String startTime = DateTime.now().toIso8601String();
+
+    final Map<String, dynamic> postData = {
+      "user_email": userId,
+      "ev_id": "1",
+      "start_time": startTime,
+      "amount": _totalAmount.toString(),
+      "payment_id": "1",
+      "status": "success",
+    };
+
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(postData),
+      );
+
+      _showStatusDialog(response.statusCode, response.body);
+    } catch (e) {
+      _showStatusDialog(0, "Error confirming payment: $e");
+    }
   }
 
-  final String paymentId = _generateRandomPaymentId();
-  final String startTime = DateTime.now().toIso8601String();
-
-  final Map<String, dynamic> postData = {
-    "user_email": userId,
-    "ev_id": "1",
-    "start_time": startTime,
-    "amount": _totalAmount.toString(),
-    "payment_id": "1",
-    "status": "success",
-  };
-
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode(postData),
-    );
-
-    _showStatusDialog(response.statusCode, response.body);
-  } catch (e) {
-    _showStatusDialog(0, "Error confirming payment: $e");
+  /// Function to load `user_id` from local storage
+  Future<String?> _getUserIdFromLocalStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(
+        'user_email',
+      ); // Assuming user_id is stored as 'user_email'
+    } catch (e) {
+      print('Error retrieving user ID: $e');
+      return null;
+    }
   }
-}
 
-/// Function to load `user_id` from local storage
-Future<String?> _getUserIdFromLocalStorage() async {
-  try {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('user_email'); // Assuming user_id is stored as 'user_email'
-  } catch (e) {
-    print('Error retrieving user ID: $e');
-    return null;
+  /// Function to generate a random `payment_id`
+  String _generateRandomPaymentId() {
+    final Random random = Random();
+    return "PAY${random.nextInt(999999).toString().padLeft(6, '0')}";
   }
-}
-
-/// Function to generate a random `payment_id`
-String _generateRandomPaymentId() {
-  final Random random = Random();
-  return "PAY${random.nextInt(999999).toString().padLeft(6, '0')}";
-}
 
   /// Show AlertDialog with status code and message
   void _showStatusDialog(int statusCode, String message) {
@@ -161,7 +166,11 @@ String _generateRandomPaymentId() {
         ),
         title: Text(
           "${widget.brand} ${widget.model}",
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         centerTitle: true,
       ),
@@ -171,9 +180,18 @@ String _generateRandomPaymentId() {
           children: [
             Padding(
               padding: const EdgeInsets.all(20),
-              child: Image.network(widget.image, height: 200, fit: BoxFit.cover, errorBuilder: (context, error, stackTrace) {
-                return const Icon(Icons.image_not_supported, size: 100, color: Colors.grey);
-              }),
+              child: Image.network(
+                widget.image,
+                height: 200,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(
+                    Icons.image_not_supported,
+                    size: 100,
+                    color: Colors.grey,
+                  );
+                },
+              ),
             ),
 
             const Text(
@@ -183,7 +201,11 @@ String _generateRandomPaymentId() {
             const SizedBox(height: 5),
             const Text(
               "\$5 per hour",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.green,
+              ),
             ),
             const SizedBox(height: 20),
 
@@ -197,12 +219,15 @@ String _generateRandomPaymentId() {
                   const SizedBox(width: 10),
                   DropdownButton<int>(
                     value: _selectedHours,
-                    items: List.generate(10, (index) => index + 1)
-                        .map((hour) => DropdownMenuItem<int>(
-                              value: hour,
-                              child: Text("$hour hour${hour > 1 ? 's' : ''}"),
-                            ))
-                        .toList(),
+                    items:
+                        List.generate(10, (index) => index + 1)
+                            .map(
+                              (hour) => DropdownMenuItem<int>(
+                                value: hour,
+                                child: Text("$hour hour${hour > 1 ? 's' : ''}"),
+                              ),
+                            )
+                            .toList(),
                     onChanged: (newValue) {
                       setState(() {
                         _selectedHours = newValue!;
@@ -224,13 +249,22 @@ String _generateRandomPaymentId() {
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 60,
+                  vertical: 15,
+                ),
               ),
               onPressed: _createPayment, // Initiate payment
               child: Text(
                 widget.buttonText,
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -243,9 +277,19 @@ String _generateRandomPaymentId() {
   Widget _infoColumn(String title, String value) {
     return Column(
       children: [
-        Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+        Text(
+          title,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 5),
-        Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
       ],
     );
   }

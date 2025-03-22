@@ -16,15 +16,18 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   int _selectedTabIndex = 0; // 0 -> Login, 1 -> Sign-Up
   final TextEditingController _loginEmailController = TextEditingController();
-  final TextEditingController _loginPasswordController = TextEditingController();
-  final TextEditingController _signUpFullNameController = TextEditingController();
+  final TextEditingController _loginPasswordController =
+      TextEditingController();
+  final TextEditingController _signUpFullNameController =
+      TextEditingController();
   final TextEditingController _signUpEmailController = TextEditingController();
-  final TextEditingController _signUpPasswordController = TextEditingController();
-  final TextEditingController _signUpConfirmPasswordController = TextEditingController();
+  final TextEditingController _signUpPasswordController =
+      TextEditingController();
+  final TextEditingController _signUpConfirmPasswordController =
+      TextEditingController();
   final TextEditingController _addressController = TextEditingController();
 
-
- Future<SharedPreferences?> _getPrefs() async {
+  Future<SharedPreferences?> _getPrefs() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       print('SharedPreferences initialized successfully');
@@ -83,8 +86,9 @@ class _AuthScreenState extends State<AuthScreen> {
       return _fallbackEmail; // Return fallback if available
     }
   }
+
   // Google Sign-In Function
- Future<UserCredential?> signInWithGoogle() async {
+  Future<UserCredential?> signInWithGoogle() async {
     try {
       if (kIsWeb) {
         GoogleAuthProvider googleProvider = GoogleAuthProvider();
@@ -93,7 +97,8 @@ class _AuthScreenState extends State<AuthScreen> {
         final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
         if (googleUser == null) return null;
 
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
 
         final credential = GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
@@ -116,11 +121,11 @@ class _AuthScreenState extends State<AuthScreen> {
         if (user?.email != null) {
           // Save email to local storage
           await _saveEmailToLocalStorage(user!.email!);
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Login Successful: ${user.displayName}')),
           );
-          
+
           // Send user data to your API endpoint
           if (user.displayName != null && user.email != null) {
             await _sendUserDataToServer(user.displayName!, user.email!);
@@ -134,9 +139,9 @@ class _AuthScreenState extends State<AuthScreen> {
         }
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign in failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sign in failed: $e')));
     }
   }
 
@@ -153,61 +158,60 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-Future<void> _sendUserDataToServer(String name, String email) async {
-  try {
-    final response = await http.post(
-      Uri.parse('https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_user'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: jsonEncode(<String, String>{
-        'name': name,
-        'email': email,
-      }),
-    );
-    
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      // Successfully created user
-      print('User data sent successfully');
-    } else {
-      // Failed to create user
-      print('Failed to send user data: ${response.statusCode}');
-      print('Response body: ${response.body}');
-    }
-  } catch (e) {
-    print('Error sending user data: $e');
-  }
-}
+  Future<void> _sendUserDataToServer(String name, String email) async {
+    try {
+      final response = await http.post(
+        Uri.parse(
+          'https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_user',
+        ),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, String>{'name': name, 'email': email}),
+      );
 
- Future<void> _clearStoredEmail() async {
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Successfully created user
+        print('User data sent successfully');
+      } else {
+        // Failed to create user
+        print('Failed to send user data: ${response.statusCode}');
+        print('Response body: ${response.body}');
+      }
+    } catch (e) {
+      print('Error sending user data: $e');
+    }
+  }
+
+  Future<void> _clearStoredEmail() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('user_email');
   }
 
-
-
   void _handleEmailPasswordSignIn() async {
     try {
-      if (_loginEmailController.text.isEmpty || _loginPasswordController.text.isEmpty) {
+      if (_loginEmailController.text.isEmpty ||
+          _loginPasswordController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Please enter both email and password')),
         );
         return;
       }
 
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _loginEmailController.text.trim(),
-        password: _loginPasswordController.text,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _loginEmailController.text.trim(),
+            password: _loginPasswordController.text,
+          );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login Successful')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Login Successful')));
 
       // Navigate to VehiclesScreen after login
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => VehiclesScreen()), 
+        MaterialPageRoute(builder: (context) => VehiclesScreen()),
       );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'An error occurred';
@@ -216,20 +220,20 @@ Future<void> _sendUserDataToServer(String name, String email) async {
       } else if (e.code == 'wrong-password') {
         errorMessage = 'Incorrect password';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign in failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sign in failed: $e')));
     }
   }
 
   void _handleEmailPasswordSignUp() async {
     try {
-      if (_signUpFullNameController.text.isEmpty || 
-          _signUpEmailController.text.isEmpty || 
+      if (_signUpFullNameController.text.isEmpty ||
+          _signUpEmailController.text.isEmpty ||
           _signUpPasswordController.text.isEmpty ||
           _addressController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -238,31 +242,35 @@ Future<void> _sendUserDataToServer(String name, String email) async {
         return;
       }
 
-      if (_signUpPasswordController.text != _signUpConfirmPasswordController.text) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Passwords do not match')),
-        );
+      if (_signUpPasswordController.text !=
+          _signUpConfirmPasswordController.text) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Passwords do not match')));
         return;
       }
 
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _signUpEmailController.text.trim(),
-        password: _signUpPasswordController.text,
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _signUpEmailController.text.trim(),
+            password: _signUpPasswordController.text,
+          );
 
       // Update display name
-      await userCredential.user?.updateDisplayName(_signUpFullNameController.text);
+      await userCredential.user?.updateDisplayName(
+        _signUpFullNameController.text,
+      );
 
       // Here you could save additional user data like address to Firestore/Database
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign Up Successful')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sign Up Successful')));
 
       // Navigate to VehiclesScreen after sign up
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => VehiclesScreen()), 
+        MaterialPageRoute(builder: (context) => VehiclesScreen()),
       );
     } on FirebaseAuthException catch (e) {
       String errorMessage = 'An error occurred';
@@ -273,13 +281,13 @@ Future<void> _sendUserDataToServer(String name, String email) async {
       } else if (e.code == 'invalid-email') {
         errorMessage = 'Invalid email format';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(errorMessage)));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign up failed: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Sign up failed: $e')));
     }
   }
 
@@ -309,7 +317,7 @@ Future<void> _sendUserDataToServer(String name, String email) async {
                 children: [
                   _buildTabButton("LOGIN", 0),
                   _buildTabButton("SIGN UP", 1),
-                ]    
+                ],
               ),
             ),
           ),
@@ -317,7 +325,10 @@ Future<void> _sendUserDataToServer(String name, String email) async {
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20),
               child: SingleChildScrollView(
-                child: _selectedTabIndex == 1 ? _buildSignUpForm() : _buildLoginForm(),
+                child:
+                    _selectedTabIndex == 1
+                        ? _buildSignUpForm()
+                        : _buildLoginForm(),
               ),
             ),
           ),
@@ -365,16 +376,29 @@ Future<void> _sendUserDataToServer(String name, String email) async {
         _buildTextField("EMAIL *", _signUpEmailController, false),
         _buildTextField("ADDRESS *", _addressController, false),
         _buildTextField("PASSWORD *", _signUpPasswordController, true),
-        _buildTextField("CONFIRM PASSWORD *", _signUpConfirmPasswordController, true),
+        _buildTextField(
+          "CONFIRM PASSWORD *",
+          _signUpConfirmPasswordController,
+          true,
+        ),
         SizedBox(height: 30),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green[700],
             padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
           onPressed: _handleEmailPasswordSignUp,
-          child: Text("SIGN UP", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          child: Text(
+            "SIGN UP",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         SizedBox(height: 20),
       ],
@@ -392,10 +416,19 @@ Future<void> _sendUserDataToServer(String name, String email) async {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green[700],
             padding: EdgeInsets.symmetric(horizontal: 50, vertical: 14),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
           onPressed: _handleEmailPasswordSignIn,
-          child: Text("LOGIN", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          child: Text(
+            "LOGIN",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
         SizedBox(height: 20),
         Center(child: Text("OR", style: TextStyle(color: Colors.black87))),
@@ -405,43 +438,62 @@ Future<void> _sendUserDataToServer(String name, String email) async {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
               side: BorderSide(color: Colors.black),
             ),
             onPressed: _handleGoogleSignIn,
             icon: Image.network(
               "https://static.vecteezy.com/system/resources/previews/011/598/471/original/google-logo-icon-illustration-free-vector.jpg", // Online image URL
               height: 24,
-              width: 24, 
+              width: 24,
               errorBuilder: (context, error, stackTrace) {
-                return Icon(Icons.error, color: Colors.red); // Fallback in case of an error
+                return Icon(
+                  Icons.error,
+                  color: Colors.red,
+                ); // Fallback in case of an error
               },
             ),
-            label: Text("Login with Google", style: TextStyle(color: Colors.black, fontSize: 16)),
+            label: Text(
+              "Login with Google",
+              style: TextStyle(color: Colors.black, fontSize: 16),
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, bool isPassword) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller,
+    bool isPassword,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
         TextFormField(
           controller: controller,
           obscureText: isPassword,
           decoration: InputDecoration(
-            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.black)),
-            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.green)),
+            enabledBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.black),
+            ),
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.green),
+            ),
           ),
         ),
         SizedBox(height: 15),
       ],
     );
   }
-  
+
   @override
   void dispose() {
     _loginEmailController.dispose();

@@ -29,14 +29,16 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
 
   Future<void> _sendPhoneNumber() async {
     final String phoneNumber = _mobileController.text.trim();
-    
+
     if (phoneNumber.length != maxLength) return;
 
     setState(() {
       _isLoading = true;
     });
 
-    final Uri url = Uri.parse("https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app");
+    final Uri url = Uri.parse(
+      "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app",
+    );
     try {
       final response = await http.post(
         url,
@@ -49,7 +51,8 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OTPVerificationScreen(mobileNumber: phoneNumber),
+            builder:
+                (context) => OTPVerificationScreen(mobileNumber: phoneNumber),
           ),
         );
       } else {
@@ -85,7 +88,11 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
         ),
         title: const Text(
           "VERIFY MOBILE",
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
         elevation: 0,
@@ -110,7 +117,11 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
               alignment: Alignment.centerLeft,
               child: Text(
                 "MOBILE NUMBER *",
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey[700],
+                ),
               ),
             ),
             const SizedBox(height: 5),
@@ -133,17 +144,25 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
-                onPressed: (_mobileController.text.length == maxLength && !_isLoading)
-                    ? _sendPhoneNumber
-                    : null,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "GET OTP",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
+                onPressed:
+                    (_mobileController.text.length == maxLength && !_isLoading)
+                        ? _sendPhoneNumber
+                        : null,
+                child:
+                    _isLoading
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                          "GET OTP",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
               ),
             ),
           ],

@@ -26,7 +26,7 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
   final ImagePicker _picker = ImagePicker();
   
   // Your API endpoint (replace with your actual backend URL)
-  final String apiUrl = "http://192.168.208.115:5000/upload_aadhardetails";
+  final String apiUrl = "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/upload_aadhardetails";
 
   @override
   void initState() {
