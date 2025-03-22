@@ -1,29 +1,18 @@
 import 'package:flutter/material.dart';
-import 'otp.dart'; // Import the OTP screen
+import 'package:my_app/vehicles.dart';
 
+class OTPVerificationScreen extends StatefulWidget {
+  final String mobileNumber;
 
-class VerifyMobileApp extends StatelessWidget {
-  const VerifyMobileApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: VerifyMobileScreen(),
-    );
-  }
-}
-
-class VerifyMobileScreen extends StatefulWidget {
-  const VerifyMobileScreen({super.key});
+  const OTPVerificationScreen({super.key, required this.mobileNumber});
 
   @override
-  State<VerifyMobileScreen> createState() => _VerifyMobileScreenState();
+  State<OTPVerificationScreen> createState() => _OTPVerificationScreenState();
 }
 
-class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
-  final TextEditingController _mobileController = TextEditingController();
-  final int maxLength = 10;
+class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
+  final TextEditingController _otpController = TextEditingController();
+  final int otpLength = 6;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +27,7 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
           },
         ),
         title: const Text(
-          "VERIFY MOBILE",
+          "ENTER OTP",
           style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -49,31 +38,27 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text(
-              "Verify your mobile number",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Enter the Mobile Number associated with your account",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            Text(
+              "Enter OTP sent to +91 ${widget.mobileNumber}",
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 30),
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                "MOBILE NUMBER *",
+                "ENTER OTP",
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.grey[700]),
               ),
             ),
             const SizedBox(height: 5),
             TextField(
-              controller: _mobileController,
-              keyboardType: TextInputType.phone,
-              maxLength: maxLength,
+              controller: _otpController,
+              keyboardType: TextInputType.number,
+              maxLength: otpLength,
+              textAlign: TextAlign.center,
               decoration: InputDecoration(
-                counterText: "${_mobileController.text.length}/$maxLength",
+                counterText: "",
                 border: const UnderlineInputBorder(),
               ),
               onChanged: (value) {
@@ -89,20 +74,28 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
                   backgroundColor: Colors.green,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
-                onPressed: _mobileController.text.length == maxLength
+                onPressed: _otpController.text.length == otpLength
                     ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => OTPVerificationScreen(mobileNumber: _mobileController.text),
-                          ),
-                        );
+                                Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VehiclesScreen()),
+        );
                       }
                     : null,
                 child: const Text(
-                  "GET OTP",
+                  "VERIFY OTP",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton(
+              onPressed: () {
+                // Resend OTP logic
+              },
+              child: const Text(
+                "Resend OTP",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.green),
               ),
             ),
           ],

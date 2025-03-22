@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'package:my_app/login_signup.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Add a delay and navigation to LoginScreen
-    Future.delayed(const Duration(seconds: 3), () {
+    // Add a delay and navigate to AuthScreen after 3 seconds
+    Future.delayed(const Duration(seconds: 4), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(builder: (context) => AuthScreen()),
       );
     });
 
@@ -19,11 +19,19 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // You can add your logo here
-            FlutterLogo(size: 100),
+            // Replaced FlutterLogo with Image.network
+            Image.network(
+  "https://raw.githubusercontent.com/Jay-1409/Storage/refs/heads/main/image-removebg-preview.png",
+  height: 200, // Increased height
+  width: 200,  // Increased width
+  fit: BoxFit.contain, // Ensures the image fits within the size
+  errorBuilder: (context, error, stackTrace) {
+    return Icon(Icons.error, size: 100, color: Colors.red);
+  },
+),
             const SizedBox(height: 20),
             const Text(
-              'Welcome to My App',
+              'Welcome to nowEV',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),

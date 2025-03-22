@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/booked_rides.dart';
+import 'package:my_app/end.dart';
 import 'package:my_app/forgot_password.dart';
+import 'package:my_app/launch.dart';
 import 'package:my_app/login_signup.dart';
+import 'package:my_app/manage_profile.dart';
+import 'package:my_app/p.dart';
+import 'package:my_app/phone_auth.dart';
 import 'package:my_app/select_city.dart';
+import 'package:my_app/splash_screen.dart';
 import 'package:my_app/vehicles.dart';
+import 'package:my_app/wallet2.dart';
+import 'package:firebase_core/firebase_core.dart';
+// import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -14,7 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SelectCityScreen(),
+      home: VehiclesScreen(),
     );
   }
 }

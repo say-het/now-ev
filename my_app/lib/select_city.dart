@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/manage_profile.dart';
 
 class SelectCityScreen extends StatelessWidget {
   const SelectCityScreen({super.key});
@@ -67,7 +68,10 @@ class SelectCityScreen extends StatelessWidget {
                   ),
                 ),
                 onPressed: () {
-                  // Handle Next button action
+                  Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ManageProfileScreen()),
+    );
                 },
                 child: const Text(
                   "NEXT",
