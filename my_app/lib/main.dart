@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:my_app/booked_rides.dart';
 import 'package:my_app/end.dart';
+import 'package:my_app/face.dart';
 import 'package:my_app/forgot_password.dart';
+import 'package:my_app/kyc.dart';
 import 'package:my_app/launch.dart';
 import 'package:my_app/login_signup.dart';
 import 'package:my_app/manage_profile.dart';
 import 'package:my_app/p.dart';
+import 'package:my_app/w.dart';
 import 'package:my_app/phone_auth.dart';
 import 'package:my_app/select_city.dart';
 import 'package:my_app/splash_screen.dart';
@@ -29,7 +32,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: VerifyMobileApp(),
+      home: SplashScreen(),
+      routes: {
+        "/dashboard": (context) => BookedRides(),
+    "/profile": (context) => ManageProfileScreen(),
+    "/subscriptions": (context) => SubscriptionsScreen(),
+      },
     );
   }
 }
@@ -44,12 +52,12 @@ class _MainScreenState extends State<MainScreen> {
 
   // List of screens to navigate
   final List<Widget> _screens = [
-    DashboardScreen(),
-    ProfileScreen(),
-    SubscriptionsScreen(),
+    BookedRides(),
+    ManageProfileScreen(),
+    // SubscriptionsScreen(),
     VehiclesScreen(),
     AboutScreen(),
-    ChangeLocationScreen(),
+    // ChangeLocationScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -95,10 +103,14 @@ class _MainScreenState extends State<MainScreen> {
             decoration: BoxDecoration(color: Colors.white),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child: Image.network(
-                'https://via.placeholder.com/100', // Replace with actual profile image
-                fit: BoxFit.cover,
-              ),
+              child:  Image.network(
+  'https://placehold.co/100', // New working placeholder
+  fit: BoxFit.cover,
+  errorBuilder: (context, error, stackTrace) {
+    return Icon(Icons.person, size: 50, color: Colors.grey);
+  },
+),
+
             ),
             accountName: Text(
               "Jay Shah",
@@ -125,8 +137,10 @@ class _MainScreenState extends State<MainScreen> {
             leading: Icon(Icons.logout, color: Colors.red),
             title: Text("LOGOUT", style: TextStyle(color: Colors.red)),
             onTap: () {
-              // Implement Logout Logic
-            },
+  Navigator.pop(context); // Close drawer
+  Navigator.pushReplacementNamed(context, "/dashboard"); // Navigate properly
+},
+
           ),
         ],
       ),

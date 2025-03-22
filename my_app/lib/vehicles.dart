@@ -27,86 +27,81 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
     super.initState();
     _requestLocationPermission(); // Request location permission on load
   }
+Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
 
-  Future<void> _fetchVehicles() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Constructing the URL with or without location data
-      String url =
-          'https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
-      // if (_currentPosition != null) {
-      //   url += '?type=scooter';
-      // }
-
-      // Add type filter based on selected tab
-      String type = _selectedTabIndex == 0 ? '' : 'car';
-      // url += _currentPosition != null ? '&type=$type' : '?type=$type';
-
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        List<dynamic> vehicles = data['data'];
-
-        // Filter vehicles based on ev_type
-        List<dynamic> carVehicles =
-            vehicles.where((v) => v['ev_type'] == "car").toList();
-        List<dynamic> bikeVehicles =
-            vehicles.where((v) => v['ev_type'] != "car").toList();
-
-        // Update the appropriate list based on the selected tab
-        setState(() {
-          // For two-wheelers tab
-          twoWheelers =
-              bikeVehicles
-                  .map(
-                    (v) => {
-                      "brand": v['brand_name'],
-                      "model": v['model'],
-                      "image": v['image'],
-                      "buttonText":
-                          v['status'] == 'available'
-                              ? "Book Now"
-                              : "Join Waitlist",
-                    },
-                  )
-                  .toList()
-                  .cast<Map<String, dynamic>>();
-
-          // For cars tab
-          cars =
-              carVehicles
-                  .map(
-                    (v) => {
-                      "brand": v['brand_name'],
-                      "model": v['model'],
-                      "image": v['image'],
-                      "buttonText":
-                          v['availability'] == 'available'
-                              ? "Book Now"
-                              : "Join Waitlist",
-                    },
-                  )
-                  .toList()
-                  .cast<Map<String, dynamic>>();
-        });
-      } else {
-        // Use default data if API fails
-        _loadDefaultData();
-      }
-    } catch (e) {
-      print('Error fetching vehicles: $e');
-      // Use default data if API fails
-      _loadDefaultData();
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
     }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
   }
+}
+
+Future<void> _fetchVehicles() async {
+  setState(() {
+    _isLoading = true;
+  });
+
+  try {
+    // Fetch the ngrok URL dynamically
+    String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    String url = '$ngrokUrl/fetch_ev';
+
+    // Determine type based on selected tab
+    String type = _selectedTabIndex == 0 ? '' : 'car';
+    
+    // Send request
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      List<dynamic> vehicles = data['data'];
+
+      // Filter vehicles
+      List<dynamic> carVehicles = vehicles.where((v) => v['ev_type'] == "car").toList();
+      List<dynamic> bikeVehicles = vehicles.where((v) => v['ev_type'] != "car").toList();
+
+      // Update UI
+      setState(() {
+        twoWheelers = bikeVehicles.map((v) => {
+          "brand": v['brand_name'],
+          "model": v['model'],
+          "image": v['image'],
+          "buttonText": v['status'] == 'available' ? "Book Now" : "Join Waitlist",
+        }).toList().cast<Map<String, dynamic>>();
+
+        cars = carVehicles.map((v) => {
+          "brand": v['brand_name'],
+          "model": v['model'],
+          "image": v['image'],
+          "buttonText": v['availability'] == 'available' ? "Book Now" : "Join Waitlist",
+        }).toList().cast<Map<String, dynamic>>();
+      });
+    } else {
+      print('Failed to fetch vehicles, status code: ${response.statusCode}');
+      _loadDefaultData();
+    }
+  } catch (e) {
+    print('Error fetching vehicles: $e');
+    _loadDefaultData();
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
+  }
+}
 
   void _loadDefaultData() {
     // Fallback to hardcoded data if API fails
@@ -232,9 +227,7 @@ class _VehiclesScreenState extends State<VehiclesScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => FaceVerificationScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => WalletScreen()),
               );
             },
           ),

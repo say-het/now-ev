@@ -1,12 +1,11 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:http_parser/http_parser.dart';
+import 'package:lottie/lottie.dart';
 
 class FaceVerificationScreen extends StatefulWidget {
   const FaceVerificationScreen({Key? key}) : super(key: key);
@@ -15,192 +14,133 @@ class FaceVerificationScreen extends StatefulWidget {
   _FaceVerificationScreenState createState() => _FaceVerificationScreenState();
 }
 
-class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
+class _FaceVerificationScreenState extends State<FaceVerificationScreen>
+    with SingleTickerProviderStateMixin {
   late CameraController _cameraController;
   late List<CameraDescription> _cameras;
   bool _isCameraInitialized = false;
-  bool _isVerifying = false;
-  String _statusMessage = "Ready to verify";
-  String _verificationResult = "";
+  bool _isProcessing = false;
+  String _statusMessage = "Position your face in the frame";
   File? _aadharImage;
   final ImagePicker _picker = ImagePicker();
-  
-  // Your API endpoint (replace with your actual backend URL)
-  final String apiUrl = "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/upload_aadhardetails";
+  final String apiUrl =
+      "https://3e9a-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/";
+
+  // Animation controllers
+  late AnimationController _animationController;
+  late Animation<double> _scanAnimation;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
     _initializeCamera();
+    _setupAnimations();
+  }
+
+  void _setupAnimations() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+
+    _scanAnimation = Tween<double>(begin: -1.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> _initializeCamera() async {
     try {
       _cameras = await availableCameras();
       _cameraController = CameraController(
-        _cameras[1], // Using front camera (index 1)
-        ResolutionPreset.medium,
-        enableAudio: false,
+        _cameras[1], // Front camera
+        ResolutionPreset.high,
+        imageFormatGroup: ImageFormatGroup.jpeg,
       );
+
       await _cameraController.initialize();
-      setState(() {
-        _isCameraInitialized = true;
-      });
+      setState(() => _isCameraInitialized = true);
+    } catch (e) {
+      setState(() => _statusMessage = "Camera initialization failed: $e");
+    }
+  }
+
+  Future<void> _captureAndVerify() async {
+    if (_aadharImage == null) {
+      setState(() => _statusMessage = "Please select Aadhaar image first");
+      return;
+    }
+
+    setState(() {
+      _isProcessing = true;
+      _statusMessage = "Capturing image...";
+    });
+
+    try {
+      // Capture face image
+      XFile imageFile = await _cameraController.takePicture();
+      File faceImage = File(imageFile.path);
+
+      setState(() => _statusMessage = "Verifying identity...");
+
+      // Upload images directly without face centering check
+      await _uploadImages(faceImage);
     } catch (e) {
       setState(() {
-        _statusMessage = "Camera initialization failed: $e";
+        _isProcessing = false;
+        _statusMessage = "Error: $e";
+      });
+    }
+  }
+
+  Future<void> _uploadImages(File faceImage) async {
+    try {
+      var dio = Dio();
+      FormData formData = FormData.fromMap({
+        "test_image": await MultipartFile.fromFile(
+          faceImage.path,
+          filename: "face.jpg",
+          contentType: MediaType("image", "jpeg"),
+        ),
+        "image": await MultipartFile.fromFile(
+          _aadharImage!.path,
+          filename: "aadhar.jpg",
+          contentType: MediaType("image", "jpeg"),
+        ),
+      });
+
+      final response = await dio.post("$apiUrl/vvffaa", data: formData);
+
+      setState(() {
+        _isProcessing = false;
+      });
+      print(response);
+      if (response.statusCode == 200) {
+        setState(() => _statusMessage = "Verification successful!");
+        // Show success animation or navigate to next screen
+      } else {
+        setState(
+          () => _statusMessage = "Verification failed: ${response.statusCode}",
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isProcessing = false;
+        _statusMessage = "Upload failed: $e";
       });
     }
   }
 
   Future<void> _pickAadharImage() async {
-    try {
-      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        setState(() {
-          _aadharImage = File(image.path);
-          _statusMessage = "Aadhaar image selected";
-        });
-      }
-    } catch (e) {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    if (image != null) {
       setState(() {
-        _statusMessage = "Error selecting image: $e";
-      });
-    }
-  }
-
-  Future<void> _startVerification() async {
-    if (_aadharImage == null) {
-      setState(() {
-        _statusMessage = "Please select Aadhaar image first";
-      });
-      return;
-    }
-
-    setState(() {
-      _isVerifying = true;
-      _statusMessage = "Processing...";
-    });
-
-    try {
-      // Upload Aadhaar image to backend
-      final result = await _uploadAadharImage();
-      
-      if (result == true) {
-        setState(() {
-          _verificationResult = "Verification successful";
-          _statusMessage = "Face verified! Blink detection started";
-        });
-        // Start blink detection process here
-        _startBlinkDetection();
-      } else {
-        setState(() {
-          _verificationResult = "Verification Passed";
-          _statusMessage = "Face verification failed. Please try again.";
-          _isVerifying = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statusMessage = "Error: $e";
-        _isVerifying = false;
-      });
-    }
-  }
-
-  Future<Map<String, dynamic>> _uploadAadharImage() async {
-    if (_aadharImage == null) {
-      throw Exception("No Aadhaar image selected");
-    }
-
-    try {
-      // Create multipart request
-      var dio = Dio();
-      FormData formData = FormData.fromMap({
-        "image": await MultipartFile.fromFile(
-          _aadharImage!.path,
-          filename: "aadhaar.jpg",
-          contentType: MediaType("image", "jpeg"),
-        ),
-      });
-
-      // Send request to backend
-      final response = await dio.post(apiUrl, data: formData);
-      
-      if (response.statusCode == 200) {
-        return response.data;
-      } else {
-        throw Exception("Server error: ${response.statusCode}");
-      }
-    } catch (e) {
-      throw Exception("Failed to upload image: $e");
-    }
-  }
-
-  int _blinkCount = 0;
-  bool _isBlinked = false;
-  int _totalFrames = 0;
-  double _threshold = 0.23; // Same as your Python EAR threshold
-
-  void _startBlinkDetection() {
-    // We're simulating blink detection here
-    // In a real implementation, you would either:
-    // 1. Use a Flutter package like google_ml_kit for on-device processing
-    // 2. Send camera frames to your backend for processing
-    
-    setState(() {
-      _blinkCount = 0;
-      _statusMessage = "Blink 3 times to verify";
-    });
-    
-    // For demonstration purposes, we'll simply detect face and simulate blinks
-    // In a real implementation, you would send frames to your backend or use ML Kit
-    _processCameraFrame();
-  }
-
-  Future<void> _processCameraFrame() async {
-    if (!_isCameraInitialized || !mounted) return;
-
-    if (_blinkCount >= 3) {
-      setState(() {
-        _statusMessage = "Verification complete! All steps passed.";
-        _verificationResult = "User verified successfully";
-        _isVerifying = false;
-      });
-      return;
-    }
-
-    try {
-      // Take a picture
-      XFile image = await _cameraController.takePicture();
-      
-      // Simulate blink detection
-      // In reality, you would either:
-      // 1. Use ML Kit to detect face landmarks and calculate EAR
-      // 2. Send this image to your backend for processing
-      
-      _totalFrames++;
-      
-      // Simulate random blinks (for demo only)
-      // In production, use actual eye detection algorithms
-      if (_totalFrames % 20 == 0 && !_isBlinked) {
-        _blinkCount++;
-        _isBlinked = true;
-        setState(() {
-          _statusMessage = "Blink detected! Count: $_blinkCount/3";
-        });
-      } else if (_totalFrames % 20 != 0) {
-        _isBlinked = false;
-      }
-      
-      // Continue processing frames
-      Future.delayed(const Duration(milliseconds: 100), () {
-        if (mounted) _processCameraFrame();
-      });
-    } catch (e) {
-      setState(() {
-        _statusMessage = "Error processing frame: $e";
-        _isVerifying = false;
+        _aadharImage = File(image.path);
+        _statusMessage = "Aadhaar image selected. Ready for verification.";
       });
     }
   }
@@ -208,61 +148,272 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen> {
   @override
   void dispose() {
     _cameraController.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Face Verification'),
+        title: const Text('Biometric Verification'),
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Column(
         children: [
           Expanded(
-            child: _isCameraInitialized
-                ? CameraPreview(_cameraController)
-                : const Center(child: CircularProgressIndicator()),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Text(
-                  _statusMessage,
-                  style: const TextStyle(fontSize: 16),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _verificationResult,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: _verificationResult.contains("successful")
-                        ? Colors.green
-                        : Colors.red,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton(
-                      onPressed: _isVerifying ? null : _pickAadharImage,
-                      child: const Text('Select Aadhaar'),
+            child:
+                _isCameraInitialized
+                    ? Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Camera preview
+                        CameraPreview(_cameraController),
+
+                        // Overlay with futuristic elements
+                        _buildFuturisticOverlay(),
+
+                        // Processing indicator
+                        if (_isProcessing)
+                          Container(
+                            color: Colors.white.withOpacity(0.6),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const CircularProgressIndicator(
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    _statusMessage,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    )
+                    : const Center(
+                      child: CircularProgressIndicator(color: Colors.green),
                     ),
-                    ElevatedButton(
-                      onPressed: _isVerifying ? null : _startVerification,
-                      child: const Text('Start Verification'),
-                    ),
-                  ],
-                ),
-              ],
-            ),
           ),
+          _buildControlPanel(),
         ],
       ),
     );
   }
+
+  Widget _buildFuturisticOverlay() {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        // Animated face outline
+        AnimatedBuilder(
+          animation: _pulseAnimation,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: _pulseAnimation.value,
+              child: Container(
+                width: 250,
+                height: 320,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.green, width: 2),
+                  borderRadius: BorderRadius.circular(150),
+                ),
+              ),
+            );
+          },
+        ),
+
+        // Scanning effect
+        AnimatedBuilder(
+          animation: _scanAnimation,
+          builder: (context, child) {
+            return Positioned(
+              top:
+                  MediaQuery.of(context).size.height *
+                  0.5 *
+                  (1 + _scanAnimation.value) *
+                  0.5,
+              child: Container(
+                width: 270,
+                height: 3,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.green.withOpacity(0.8),
+                      Colors.green,
+                      Colors.green.withOpacity(0.8),
+                      Colors.transparent,
+                    ],
+                    stops: const [0.0, 0.25, 0.5, 0.75, 1.0],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+
+        // Corner markers for futuristic feel
+        Positioned(top: 80, left: 60, child: _buildCornerMarker()),
+        Positioned(top: 80, right: 60, child: _buildCornerMarker(flipX: true)),
+        Positioned(
+          bottom: 80,
+          left: 60,
+          child: _buildCornerMarker(flipY: true),
+        ),
+        Positioned(
+          bottom: 80,
+          right: 60,
+          child: _buildCornerMarker(flipX: true, flipY: true),
+        ),
+
+        // Status text
+        Positioned(
+          bottom: 30,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              _statusMessage,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCornerMarker({bool flipX = false, bool flipY = false}) {
+    return Transform(
+      alignment: Alignment.center,
+      transform:
+          Matrix4.identity()..scale(flipX ? -1.0 : 1.0, flipY ? -1.0 : 1.0),
+      child: SizedBox(
+        width: 20,
+        height: 20,
+        child: CustomPaint(painter: CornerPainter(color: Colors.green)),
+      ),
+    );
+  }
+
+  Widget _buildControlPanel() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.green, width: 1)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildActionButton(
+                icon: Icons.insert_drive_file,
+                label: "Select Aadhaar",
+                onPressed: _pickAadharImage,
+              ),
+              _buildActionButton(
+                icon: Icons.camera_alt,
+                label: "Capture & Verify",
+                onPressed: _captureAndVerify,
+                isPrimary: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          if (_aadharImage != null)
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    "Aadhaar image selected",
+                    style: TextStyle(
+                      color: Colors.green.shade300,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    bool isPrimary = false,
+  }) {
+    return Expanded(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isPrimary ? Colors.green : Colors.white,
+            foregroundColor: Colors.black,
+            side: BorderSide(color: Colors.green, width: isPrimary ? 0 : 1),
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon),
+              const SizedBox(height: 4),
+              Text(label, style: const TextStyle(fontSize: 12)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Custom painter for corner markers
+class CornerPainter extends CustomPainter {
+  final Color color;
+
+  CornerPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2;
+
+    // Draw an L shape
+    final path =
+        Path()
+          ..moveTo(0, size.height * 0.4)
+          ..lineTo(0, 0)
+          ..lineTo(size.width * 0.4, 0);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

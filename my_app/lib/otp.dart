@@ -27,7 +27,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     });
 
     final Uri url = Uri.parse(
-      "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify",
+      "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify",
     );
     try {
       final response = await http.post(

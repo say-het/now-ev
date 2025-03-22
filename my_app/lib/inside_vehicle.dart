@@ -33,7 +33,7 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
   /// Step 1: Make POST request to `/cpayment` to get `checkout_url`
   Future<void> _createPayment() async {
     const String apiUrl =
-        "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
+        "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
 
     final Map<String, dynamic> requestData = {
       "user_id": "123456",
@@ -83,7 +83,7 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
   /// Step 3: Make a POST request to `/payment` after returning
   Future<void> _confirmPayment() async {
     const String apiUrl =
-        "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
+        "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
 
     final String? userId = await _getUserIdFromLocalStorage();
     if (userId == null) {

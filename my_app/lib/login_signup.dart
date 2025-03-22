@@ -162,7 +162,7 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       final response = await http.post(
         Uri.parse(
-          'https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_user',
+          'https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_user',
         ),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',

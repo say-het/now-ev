@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_app/vehicles.dart'; // Import VehiclesScreen
 
 class BookedRides extends StatelessWidget {
   @override
@@ -7,7 +8,7 @@ class BookedRides extends StatelessWidget {
       backgroundColor: Colors.grey[200],
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: Text(
+        title: const Text(
           "DASHBOARD",
           style: TextStyle(
             fontWeight: FontWeight.bold,
@@ -16,9 +17,12 @@ class BookedRides extends StatelessWidget {
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white), // Back button
           onPressed: () {
-            Scaffold.of(context).openDrawer(); // Opens the drawer
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => VehiclesScreen()),
+            );
           },
         ),
       ),
@@ -34,19 +38,22 @@ class BookedRides extends StatelessWidget {
                 fontSize: 16,
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[700],
-                padding: EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
                 ),
               ),
               onPressed: () {
-                // Navigate to explore vehicles screen
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => VehiclesScreen()),
+                );
               },
-              child: Text(
+              child: const Text(
                 "EXPLORE VEHICLES",
                 style: TextStyle(
                   color: Colors.white,
