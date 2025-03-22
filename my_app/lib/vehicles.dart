@@ -35,7 +35,7 @@ Future<void> _fetchVehicles() async {
 
   try {
     // Constructing the URL with or without location data
-    String url = 'https://60a5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
+    String url = 'https://31f5-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/fetch_ev';
     // if (_currentPosition != null) {
     //   url += '?type=scooter';
     // }
