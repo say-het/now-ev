@@ -82,35 +82,40 @@ This project aims to **create a secure EV rental management module** for mobile/
 
 ---
 
-## 🏞 UI & Implementation Flow
+## 🏞 UI 
 
-### 📸 Screenshots
-👉 Add your UI photos here
+#### 👤 User
 
-### 🔄 Implementation Flow
-👉 Add implementation flow images here
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/8892e81f-c09c-4cf9-9aa7-52c305109f5e" width="43%" height="900"/>
+  <img src="https://github.com/user-attachments/assets/ed383b14-5bfb-444d-9652-004d7eca9783" width="43%" height="900" />
+</p>
 
-![1](https://github.com/user-attachments/assets/8892e81f-c09c-4cf9-9aa7-52c305109f5e)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/9fcbb63a-e23a-4676-b9d5-e2ba66a2d26a" width="43%" height="900" />
+  <img src="https://github.com/user-attachments/assets/c45fe508-d30a-4689-8ff4-57fc6868ec6e" width="43%" height="900" />
+</p>
 
-![2](https://github.com/user-attachments/assets/ed383b14-5bfb-444d-9652-004d7eca9783)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/0e202667-f843-4662-b12b-3a5850426879" width="43%" height="900"/>
+  <img src="https://github.com/user-attachments/assets/dca67435-c33f-4f0a-b373-ead345435af7" width="43%" height="900" />
+</p>
 
-![3](https://github.com/user-attachments/assets/9fcbb63a-e23a-4676-b9d5-e2ba66a2d26a)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/985d8fe9-7148-4e19-bc47-bb5c619e7873" width="43%" height="900" />
+  <img src="https://github.com/user-attachments/assets/c9485cf9-5e6f-4606-8ef0-1911d8388597" width="43%" height="900" />
+</p>
 
-![31](https://github.com/user-attachments/assets/c45fe508-d30a-4689-8ff4-57fc6868ec6e)
+#### 🛠️ Admin
 
-![4](https://github.com/user-attachments/assets/0e202667-f843-4662-b12b-3a5850426879)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c63a8006-3780-4d82-bf95-a8e148cc5e38" width="45%" />
+  <img src="https://github.com/user-attachments/assets/4060eb6e-8f44-4fab-85cd-7d763cd67435" width="45%" />
+</p>
 
-![32](https://github.com/user-attachments/assets/dca67435-c33f-4f0a-b373-ead345435af7)
-
-![5](https://github.com/user-attachments/assets/985d8fe9-7148-4e19-bc47-bb5c619e7873)
-
-![6](https://github.com/user-attachments/assets/c9485cf9-5e6f-4606-8ef0-1911d8388597)
-
-![40](https://github.com/user-attachments/assets/c63a8006-3780-4d82-bf95-a8e148cc5e38)
-
-![7](https://github.com/user-attachments/assets/4060eb6e-8f44-4fab-85cd-7d763cd67435)
-
-![40](https://github.com/user-attachments/assets/3aee04b8-07cb-46fe-a290-0e0eef9de2b0)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3aee04b8-07cb-46fe-a290-0e0eef9de2b0" width="45%" />
+</p>
 
 
 ---
@@ -162,7 +167,3 @@ This project aims to **create a secure EV rental management module** for mobile/
 💡 *Feel free to contribute by submitting pull requests!* 
 
 # Team Big Brains
-
-
-
-readme
