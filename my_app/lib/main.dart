@@ -18,10 +18,9 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  
+
   // Initialize Firebase
   await Firebase.initializeApp();
   runApp(MyApp());
@@ -32,11 +31,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      home: AuthScreen(),
       routes: {
         "/dashboard": (context) => BookedRides(),
-    "/profile": (context) => ManageProfileScreen(),
-    "/subscriptions": (context) => SubscriptionsScreen(),
+        "/profile": (context) => ManageProfileScreen(),
+        "/subscriptions": (context) => SubscriptionsScreen(),
       },
     );
   }
@@ -88,7 +87,7 @@ class _MainScreenState extends State<MainScreen> {
       "Subscriptions",
       "Vehicles",
       "About Swytchd",
-      "Change Location"
+      "Change Location",
     ];
     return titles[index];
   }
@@ -103,18 +102,20 @@ class _MainScreenState extends State<MainScreen> {
             decoration: BoxDecoration(color: Colors.white),
             currentAccountPicture: CircleAvatar(
               backgroundColor: Colors.white,
-              child:  Image.network(
-  'https://placehold.co/100', // New working placeholder
-  fit: BoxFit.cover,
-  errorBuilder: (context, error, stackTrace) {
-    return Icon(Icons.person, size: 50, color: Colors.grey);
-  },
-),
-
+              child: Image.network(
+                'https://avatar.iran.liara.run/public', // New working placeholder
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(Icons.person, size: 50, color: Colors.grey);
+                },
+              ),
             ),
             accountName: Text(
               "Jay Shah",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             accountEmail: Text(
               "9723557662",
@@ -137,10 +138,12 @@ class _MainScreenState extends State<MainScreen> {
             leading: Icon(Icons.logout, color: Colors.red),
             title: Text("LOGOUT", style: TextStyle(color: Colors.red)),
             onTap: () {
-  Navigator.pop(context); // Close drawer
-  Navigator.pushReplacementNamed(context, "/dashboard"); // Navigate properly
-},
-
+              Navigator.pop(context); // Close drawer
+              Navigator.pushReplacementNamed(
+                context,
+                "/dashboard",
+              ); // Navigate properly
+            },
           ),
         ],
       ),
@@ -167,8 +170,10 @@ class DashboardScreen extends StatelessWidget {
         children: [
           Icon(Icons.dashboard, size: 100, color: Colors.blue),
           SizedBox(height: 20),
-          Text("Welcome to the Dashboard",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            "Welcome to the Dashboard",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
@@ -183,8 +188,10 @@ class ProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Profile Details",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(
+            "Profile Details",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10),
           ListTile(
             leading: Icon(Icons.person, color: Colors.black),
@@ -241,8 +248,10 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("About Swytchd",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(
+            "About Swytchd",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
           SizedBox(height: 10),
           Text(
             "Swytchd is a platform that provides hassle-free vehicle "
@@ -264,8 +273,10 @@ class ChangeLocationScreen extends StatelessWidget {
         children: [
           Icon(Icons.location_on, size: 100, color: Colors.red),
           SizedBox(height: 20),
-          Text("Update Your Location",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text(
+            "Update Your Location",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

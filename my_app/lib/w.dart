@@ -16,18 +16,44 @@ class AddToWalletScreen extends StatefulWidget {
 class _AddToWalletScreenState extends State<AddToWalletScreen> {
   final TextEditingController _amountController = TextEditingController();
   bool _isProcessing = false;
+Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
+  }
+}
 
   /// Step 1: Make a POST request to get `checkout_url`
   Future<void> _createPayment() async {
     final String amount = _amountController.text.trim();
-    if (amount.isEmpty || double.tryParse(amount) == null || double.parse(amount) <= 0) {
+    if (amount.isEmpty ||
+        double.tryParse(amount) == null ||
+        double.parse(amount) <= 0) {
       _showStatusDialog(0, "Please enter a valid amount.");
       return;
     }
 
     setState(() => _isProcessing = true);
 
-    const String apiUrl = "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
+ String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    String apiUrl = '$ngrokUrl/cpayment';
+
+
     final Map<String, dynamic> requestData = {
       "user_id": "123456",
       "amount": amount,
@@ -59,10 +85,7 @@ class _AddToWalletScreenState extends State<AddToWalletScreen> {
     final Uri checkoutUri = Uri.parse(url);
 
     if (await canLaunchUrl(checkoutUri)) {
-      await launchUrl(
-        checkoutUri,
-        mode: LaunchMode.inAppWebView,
-      );
+      await launchUrl(checkoutUri, mode: LaunchMode.inAppWebView);
       Timer(const Duration(seconds: 2), _confirmPayment);
     } else {
       _showStatusDialog(0, "Could not open checkout URL");
@@ -71,7 +94,13 @@ class _AddToWalletScreenState extends State<AddToWalletScreen> {
 
   /// Step 3: Confirm Payment
   Future<void> _confirmPayment() async {
-    const String apiUrl = "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
+    String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    String apiUrl = '$ngrokUrl/create_rental';
 
     final String? userId = await _getUserIdFromLocalStorage();
     if (userId == null) {
@@ -123,16 +152,17 @@ class _AddToWalletScreenState extends State<AddToWalletScreen> {
   void _showStatusDialog(int statusCode, String message) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Payment Response"),
-        content: Text("Status Code: $statusCode\n\nMessage: $message"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("OK"),
+      builder:
+          (context) => AlertDialog(
+            title: const Text("Payment Response"),
+            content: Text("Status Code: $statusCode\n\nMessage: $message"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -157,11 +187,15 @@ class _AddToWalletScreenState extends State<AddToWalletScreen> {
             ElevatedButton(
               onPressed: _isProcessing ? null : _createPayment,
               style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 15,
+                  horizontal: 40,
+                ),
               ),
-              child: _isProcessing
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text("Add to Wallet"),
+              child:
+                  _isProcessing
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Add to Wallet"),
             ),
           ],
         ),

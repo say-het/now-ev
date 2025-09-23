@@ -29,11 +29,29 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
   int get _totalAmount =>
       _selectedHours * 5; // Calculate total amount ($5 per hour)
   DateTime? _startTime;
+  Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
 
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
+  }
+}
   /// Step 1: Make POST request to `/cpayment` to get `checkout_url`
   Future<void> _createPayment() async {
-    const String apiUrl =
-        "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/cpayment";
+     String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+String apiUrl = '$ngrokUrl/cpayment';
 
     final Map<String, dynamic> requestData = {
       "user_id": "123456",
@@ -82,8 +100,16 @@ class _AtherScooterScreenState extends State<AtherScooterScreen> {
 
   /// Step 3: Make a POST request to `/payment` after returning
   Future<void> _confirmPayment() async {
-    const String apiUrl =
-        "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/create_rental";
+ 
+       String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    String apiUrl = '$ngrokUrl/create_rental';
+
+
 
     final String? userId = await _getUserIdFromLocalStorage();
     if (userId == null) {

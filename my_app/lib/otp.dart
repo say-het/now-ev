@@ -16,6 +16,22 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   final int otpLength = 6;
   bool _isLoading = false;
+Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
+  }
+}
 
   Future<void> _verifyOTP() async {
     final String otp = _otpController.text.trim();
@@ -25,9 +41,16 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
     setState(() {
       _isLoading = true;
     });
+    String? ngrokUrl = await _fetchNgrokUrl();
+if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    String apiUrl = '$ngrokUrl/verify';
 
     final Uri url = Uri.parse(
-      "https://c3ae-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/verify",
+      apiUrl,
     );
     try {
       final response = await http.post(

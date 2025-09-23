@@ -26,7 +26,22 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
   final TextEditingController _mobileController = TextEditingController();
   final int maxLength = 13;
   bool _isLoading = false;
+Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
 
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
+  }
+}
   Future<void> _sendPhoneNumber() async {
     final String phoneNumber = _mobileController.text.trim();
 
@@ -35,9 +50,15 @@ class _VerifyMobileScreenState extends State<VerifyMobileScreen> {
     setState(() {
       _isLoading = true;
     });
+String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
 
+    // Construct the vehicle API URL
+    // String apiUrl = '$ngrokUrl/fetch_ev';
     final Uri url = Uri.parse(
-      "https://6fb9-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app",
+      ngrokUrl
     );
     try {
       final response = await http.post(

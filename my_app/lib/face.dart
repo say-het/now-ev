@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http_parser/http_parser.dart';
@@ -23,8 +25,25 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen>
   String _statusMessage = "Position your face in the frame";
   File? _aadharImage;
   final ImagePicker _picker = ImagePicker();
-  final String apiUrl =
-      "https://3e9a-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/";
+  Future<String?> _fetchNgrokUrl() async {
+  try {
+    final response = await http.get(Uri.parse('https://middleman-server.vercel.app/ngrok-url'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['ngrokUrl']; // Assuming response format: { "ngrokUrl": "https://your-ngrok-url" }
+    } else {
+      print('Failed to fetch ngrok URL');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching ngrok URL: $e');
+    return null;
+  }
+}
+
+  // final String apiUrl =
+  //     "https://3e9a-2402-a00-405-e1a3-4900-1065-4a70-db1d.ngrok-free.app/";
 
   // Animation controllers
   late AnimationController _animationController;
@@ -99,6 +118,14 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen>
 
   Future<void> _uploadImages(File faceImage) async {
     try {
+      String? ngrokUrl = await _fetchNgrokUrl();
+    if (ngrokUrl == null) {
+      throw Exception("Ngrok URL not available");
+    }
+
+    // Construct the vehicle API URL
+    // String apiUrl = '$ngrokUrl/fetch_ev';
+
       var dio = Dio();
       FormData formData = FormData.fromMap({
         "test_image": await MultipartFile.fromFile(
@@ -113,7 +140,7 @@ class _FaceVerificationScreenState extends State<FaceVerificationScreen>
         ),
       });
 
-      final response = await dio.post("$apiUrl/vvffaa", data: formData);
+      final response = await dio.post("$ngrokUrl/vvffaa", data: formData);
 
       setState(() {
         _isProcessing = false;

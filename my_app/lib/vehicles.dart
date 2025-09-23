@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:my_app/face.dart';
 import 'package:my_app/idk.dart';
+import 'package:my_app/w.dart';
 import 'package:my_app/manage_profile.dart';
 import 'package:my_app/wallet2.dart';
 import 'package:my_app/welcome.dart';
@@ -227,7 +228,7 @@ Future<void> _fetchVehicles() async {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => WalletScreen()),
+                MaterialPageRoute(builder: (context) => AddToWalletScreen()),
               );
             },
           ),
